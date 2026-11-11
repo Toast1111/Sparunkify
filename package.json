@@ -1,0 +1,14 @@
+{
+  "name": "sparunkify",
+  "version": "0.1.13",
+  "private": true,
+  "description": "Procedural album artwork Chrome extension",
+  "scripts": {
+    "test": "node --test tests/engine.test.cjs tests/content.test.cjs",
+    "check": "node scripts/check.cjs",
+    "package": "node scripts/package.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

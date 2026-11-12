@@ -1,15 +1,25 @@
 # Sparunkify
 
-A Chrome extension for Spotify Web Player with reflective album artwork and an optional audio-reactive Maxwell cat.
+A Chrome extension that brings reflective album artwork and an optional audio-reactive Maxwell cat directly to Spotify Web Player's sidebar.
 
 ![Sparunkify artwork effects and Maxwell demo](docs/media/maxwell.gif)
 
 ## Features
 
 - Foil, gloss and embossed artwork finishes with adjustable relief and reflections.
-- Pointer tilt, inline artwork effects and an expanded artwork view.
-- Optional Maxwell below the artwork, with music-driven spin and squish.
+- Artwork effects in the Web Player's Now Playing sidebar, plus an expanded artwork view with pointer tilt.
+- Optional Maxwell below the sidebar artwork and above the track details, with music-driven spin and squish.
 - Local settings and audio processing. No account API keys or analytics.
+
+## Built into the Web Player sidebar
+
+Keep browsing Spotify while Sparunkify adds reflections and depth to the large album cover in the **Now Playing sidebar**. Maxwell has his own space below the cover, with the song title and artist visible underneath.
+
+1. Play a track and open the Web Player's Now Playing sidebar so the large cover is visible.
+2. Open the Sparunkify extension popup and enable **Show effects in Spotify**.
+3. Optionally enable **Maxwell below artwork** from that same Spotify tab. He spins and squishes to the music while staying below the cover.
+
+The separate **Artwork** view is also available for a larger preview and finish adjustments.
 
 ## Gross vs. Great
 
@@ -30,7 +40,7 @@ Requires Chrome 116 or later and Spotify Web Player.
 
 Use **Original** to compare the artwork, **Settings** to adjust its finish, and **Escape** to close the view. After an update, reload the extension and refresh Spotify.
 
-To enable Maxwell, open the extension popup **on the playing Spotify tab** and turn on **Maxwell below artwork**. He stays below the artwork while music controls his spin and bounded squish. Turning him off releases tab-audio capture.
+Turning **Maxwell below artwork** off releases tab-audio capture.
 
 ## Privacy and compatibility
 

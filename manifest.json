@@ -1,10 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Sparunkify",
-  "version": "0.1.13",
+  "version": "0.2.3",
+  "minimum_chrome_version": "116",
   "description": "Procedural depth, holographic foil, indirect reflections and parallax for Spotify album artwork.",
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab",
+    "tabCapture",
+    "offscreen"
   ],
   "host_permissions": [
     "https://open.spotify.com/*",
@@ -30,6 +34,10 @@
       "js": [
         "artwork.js",
         "engine.js",
+        "assets/maxwell/mesh.js",
+        "maxwell-renderer.js",
+        "maxwell-audio.js",
+        "maxwell-cat.js",
         "spotify-theme.js",
         "surface.js",
         "content.js"
@@ -40,6 +48,7 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'"
   },
+  "web_accessible_resources": [{"resources":["assets/maxwell/dingus_nowhiskers.jpg","assets/maxwell/dingus_whiskers.tga.png"],"matches":["https://open.spotify.com/*"]}],
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

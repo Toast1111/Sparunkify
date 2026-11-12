@@ -1,10 +1,10 @@
 {
   "name": "sparunkify",
-  "version": "0.1.13",
+  "version": "0.2.3",
   "private": true,
-  "description": "Procedural album artwork Chrome extension",
+  "description": "Spotify artwork effects and an optional audio-reactive Maxwell cat",
   "scripts": {
-    "test": "node --test tests/engine.test.cjs tests/content.test.cjs",
+    "test": "node --test tests/engine.test.cjs tests/content.test.cjs tests/maxwell.test.cjs",
     "check": "node scripts/check.cjs",
     "package": "node scripts/package.cjs"
   },

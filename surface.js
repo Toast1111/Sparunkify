@@ -15,6 +15,7 @@
     @media(min-width:900px){.room.settings-open{grid-template-columns:minmax(0,1fr) 280px}.panel{grid-column:2;grid-row:2;border-top:0;border-left:1px solid #303030}}
     @media(max-width:650px){header{align-items:flex-start;flex-direction:column;padding:12px 16px;gap:10px}.actions{gap:6px}.actions button{font-size:12px;padding:7px 10px}main{padding:20px 16px}.stage{width:min(52vh,100%)}.panel{padding:20px 16px}}
     .sleeve:has(canvas[aria-label="Generated grayscale displacement map"]){transition:none}
+    .maxwell-slot{position:relative;width:min(56vh,640px,100%);height:180px;flex-shrink:0;overflow:hidden;contain:paint}.maxwell-slot[hidden]{display:none}
     @media(prefers-reduced-motion:reduce){*{transition:none!important}}
   `;
   S.createSurface=function({settings,onSettings,onClose,demo=false}) {
@@ -31,6 +32,7 @@
         <main>
           <div class="eyebrow" id="source">${demo?'Image preview':'Now playing'}</div>
           <div class="stage"><div class="sleeve"><img alt="Album artwork" hidden><canvas aria-label="Procedurally illuminated album artwork"></canvas><div class="empty">Waiting for artwork<small>Play a track in Spotify.</small></div></div></div>
+          <div class="maxwell-slot" hidden aria-label="Maxwell below the artwork"></div>
           <div class="under-art">Effects on</div>
           <div class="metadata"><h1 id="title">No track selected</h1><p class="artist" id="artist"></p></div>
           <p class="hint">Move the pointer over the artwork to tilt it.</p>
@@ -46,10 +48,14 @@
           <p class="caption">Higher roughness softens reflections.</p>
         </aside>
       </section>`;
-    document.body.append(host);const $=s=>root.querySelector(s),canvas=$('canvas'),sleeve=$('.sleeve'),fallback=$('img');let renderer=null,currentImage=null,disposed=false,viewMode='effects',nativeTheme=null;
-    const surface={host,root,settings:S.normalize(settings),setTheme(theme){nativeTheme=theme;applyTheme();},setStatus(message){$('#status').textContent=message;},setTrack(track){$('#title').textContent=track.title||'Untitled track';$('#artist').textContent=track.artist||'Spotify';$('#source').textContent=demo?'Image preview':'Now playing';},setImage(image){currentImage=image;fallback.src=image.src;fallback.hidden=false;$('.empty').hidden=true;try{if(!renderer)renderer=new S.Renderer(canvas,surface.settings,message=>{sleeve.classList.remove('ready');$('#displacement').disabled=true;setView('effects');surface.setStatus(message);});host.style.setProperty('--album-color',renderer.setImage(image));applyTheme();sleeve.classList.add('ready');$('#displacement').disabled=false;setView(viewMode);surface.setStatus(`Artwork: ${image.naturalWidth} x ${image.naturalHeight}${image.naturalWidth<640?' / Higher-resolution artwork unavailable':''}`);}catch(error){sleeve.classList.remove('ready');$('#displacement').disabled=true;setView('effects');surface.setStatus(error.message);}},update(next){surface.settings=S.normalize(next);if(renderer)renderer.settings=surface.settings;sync();},destroy(){disposed=true;renderer?.destroy();document.removeEventListener('keydown',keydown);host.remove();}};
+    document.body.append(host);const $=s=>root.querySelector(s),canvas=$('canvas'),sleeve=$('.sleeve'),fallback=$('img');let renderer=null,cat=null,currentImage=null,disposed=false,viewMode='effects',nativeTheme=null;
+    const surface={host,root,settings:S.normalize(settings),setTheme(theme){nativeTheme=theme;applyTheme();},setStatus(message){$('#status').textContent=message;},setTrack(track){$('#title').textContent=track.title||'Untitled track';$('#artist').textContent=track.artist||'Spotify';$('#source').textContent=demo?'Image preview':'Now playing';},setImage(image){currentImage=image;fallback.src=image.src;fallback.hidden=false;$('.empty').hidden=true;try{if(!renderer)renderer=new S.Renderer(canvas,surface.settings,message=>{sleeve.classList.remove('ready');$('#displacement').disabled=true;setView('effects');surface.setStatus(message);});host.style.setProperty('--album-color',renderer.setImage(image));applyTheme();sleeve.classList.add('ready');$('#displacement').disabled=false;setView(viewMode);surface.setStatus(`Artwork: ${image.naturalWidth} x ${image.naturalHeight}${image.naturalWidth<640?' / Higher-resolution artwork unavailable':''}`);}catch(error){sleeve.classList.remove('ready');$('#displacement').disabled=true;setView('effects');surface.setStatus(error.message);}},update(next){surface.settings=S.normalize(next);if(renderer)renderer.settings=surface.settings;sync();},destroy(){disposed=true;renderer?.destroy();cat?.destroy();document.removeEventListener('keydown',keydown);host.remove();}};
+    function syncCat(){const slot=$('.maxwell-slot'),enabled=surface.settings.enabled&&surface.settings.maxwell&&S.MaxwellCat;
+      if(enabled&&!cat){try{cat=new S.MaxwellCat(slot,message=>surface.setStatus(message));}catch(error){surface.setStatus(error.message);}}
+      if(!enabled&&cat){cat.destroy();cat=null;}slot.hidden=!enabled||viewMode!=='effects';if(cat)cat.active=!slot.hidden;
+    }
     function applyTheme(){const room=$('.room');room.style.backgroundColor=nativeTheme?.color||'';room.style.backgroundImage=nativeTheme?.image||'';room.dataset.themeSource=nativeTheme?'spotify':'artwork';}
-    function sync(){for(const key of ['depth','roughness','shine','sparkle']){$('#'+key).value=surface.settings[key];$(`output[for="${key}"]`).textContent=surface.settings[key]+'%';}for(const key of ['motion','parallax'])$('#'+key).checked=surface.settings[key];root.querySelectorAll('[data-preset]').forEach(button=>button.setAttribute('aria-pressed',button.dataset.preset===surface.settings.preset));}
+    function sync(){syncCat();for(const key of ['depth','roughness','shine','sparkle']){$('#'+key).value=surface.settings[key];$(`output[for="${key}"]`).textContent=surface.settings[key]+'%';}for(const key of ['motion','parallax'])$('#'+key).checked=surface.settings[key];root.querySelectorAll('[data-preset]').forEach(button=>button.setAttribute('aria-pressed',button.dataset.preset===surface.settings.preset));}
     function change(patch){if(viewMode==='original')setView('effects');surface.update({...surface.settings,...patch});onSettings?.(surface.settings);}
     root.querySelectorAll('[data-preset]').forEach(button=>button.addEventListener('click',()=>change({preset:button.dataset.preset,...S.presets[button.dataset.preset]})));
     for(const key of ['depth','roughness','shine','sparkle'])$('#'+key).addEventListener('input',event=>change({[key]:Number(event.target.value)}));
@@ -58,7 +64,7 @@
     $('#tune').addEventListener('click',()=>{const panel=$('.panel');panel.hidden=!panel.hidden;$('#tune').setAttribute('aria-expanded',String(!panel.hidden));$('.room').classList.toggle('settings-open',!panel.hidden);});
     const defaultHint=$('.hint').textContent;
     function setView(mode){
-      viewMode=mode;
+      viewMode=mode;syncCat();
       const displacement=mode==='displacement',original=mode==='original';
       if(renderer){renderer.showDisplacement=displacement;renderer.target=[0,0];}
       sleeve.classList.toggle('original',original);

@@ -4,7 +4,8 @@ const root=path.resolve(__dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'),'utf8'));
 const files=[...new Set(['manifest.json','PRIVACY.md',manifest.background.service_worker,
   ...manifest.content_scripts.flatMap(entry=>entry.js),manifest.action.default_popup,
-  'popup.js','popup.css','preview.html','preview.js',...Object.values(manifest.icons||{})])].sort();
+  'popup.js','popup.css','preview.html','preview.js','maxwell-offscreen.html','maxwell-offscreen.js','maxwell-cat.js','maxwell-audio.js','maxwell-renderer.js',
+  'assets/maxwell/mesh.js','assets/maxwell/dingus_nowhiskers.jpg','assets/maxwell/dingus_whiskers.tga.png',...Object.values(manifest.icons||{})])].sort();
 function crc32(data){let crc=0xffffffff;for(const byte of data){crc^=byte;for(let bit=0;bit<8;bit++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return(crc^0xffffffff)>>>0;}
 const local=[],central=[];let offset=0;
 for(const file of files){

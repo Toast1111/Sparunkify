@@ -1,7 +1,7 @@
 /* Shared dependency-free WebGL renderer; also exercised by preview.html. */
 (() => {
   'use strict';
-  const defaults = {enabled: true, inline: true, preset: 'foil', depth: 48, roughness: 38, shine: 65, sparkle: 32, motion: true, parallax: true};
+  const defaults = {enabled: true, inline: true, maxwell: false, preset: 'foil', depth: 48, roughness: 38, shine: 65, sparkle: 32, motion: true, parallax: true};
   const presets = {
     foil: {depth: 48, roughness: 38, shine: 65, sparkle: 32},
     gloss: {depth: 22, roughness: 20, shine: 58, sparkle: 4},
@@ -9,7 +9,7 @@
   };
   function normalize(settings = {}) {
     const result = {...defaults};
-    for (const key of ['enabled','inline','motion','parallax']) if (typeof settings[key] === 'boolean') result[key] = settings[key];
+    for (const key of ['enabled','inline','motion','parallax','maxwell']) if (typeof settings[key] === 'boolean') result[key] = settings[key];
     for (const key of ['depth','roughness','shine','sparkle']) if (Number.isFinite(settings[key])) result[key] = Math.max(0, Math.min(100, settings[key]));
     if (Object.hasOwn(presets, settings.preset)) result.preset = settings.preset;
     return result;

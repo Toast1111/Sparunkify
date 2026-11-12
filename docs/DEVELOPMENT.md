@@ -42,6 +42,13 @@ The README recording is `docs/media/maxwell.gif`. To optimize a replacement reco
 python scripts/optimize-readme-gif.py /path/to/original.gif
 ```
 
+The **Gross vs. Great** comparison uses `docs/media/before.gif` and `docs/media/after.gif`. To regenerate them from the historical and current renderers, use Playwright and Pillow:
+
+```sh
+node scripts/render-demos.cjs /path/to/node_modules/playwright
+python scripts/make-demo-gifs.py
+```
+
 Keep original recordings and other local working files in `.local/`, which Git ignores. The optimizer preserves the original file and animation duration.
 
 ## Maxwell implementation

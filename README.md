@@ -11,6 +11,14 @@ A Chrome extension for Spotify Web Player with reflective album artwork and an o
 - Optional Maxwell below the artwork, with music-driven spin and squish.
 - Local settings and audio processing. No account API keys or analytics.
 
+## Gross vs. Great
+
+| Gross | Great |
+| --- | --- |
+| ![Earlier renderer with washed colors](docs/media/before.gif) | ![Updated renderer with soft reflections and preserved contrast](docs/media/after.gif) |
+
+Same demo artwork, settings and cursor path. Earlier renderer compared with the updated finish; recorded offline.
+
 ## Install
 
 Requires Chrome 116 or later and Spotify Web Player.

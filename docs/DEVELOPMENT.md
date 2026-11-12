@@ -51,6 +51,8 @@ python scripts/make-demo-gifs.py
 
 Keep original recordings and other local working files in `.local/`, which Git ignores. The optimizer preserves the original file and animation duration.
 
+Upload-ready store screenshots and promotional tiles use original fictional album art. See [Chrome Web Store graphics](store/README.md) for the files, dimensions, source prompt and regeneration instructions.
+
 ## Maxwell implementation
 
 The popup must be invoked on the Spotify tab to grant `activeTab`. Enabling Maxwell starts tab-audio capture in an extension offscreen document. Web Audio analyses the stream locally and preserves audible playback. Samples are forwarded to the content script, which renders Maxwell in a separate layout slot below the artwork.

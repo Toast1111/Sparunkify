@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'),'utf8'));
-const files=[...new Set(['manifest.json','PRIVACY.md',manifest.background.service_worker,
+const files=[...new Set(['manifest.json','PRIVACY.md','THIRD_PARTY_NOTICES.md',manifest.background.service_worker,
   ...manifest.content_scripts.flatMap(entry=>entry.js),manifest.action.default_popup,
   'popup.js','popup.css','preview.html','preview.js','maxwell-offscreen.html','maxwell-offscreen.js','maxwell-cat.js','maxwell-audio.js','maxwell-renderer.js',
   'assets/maxwell/mesh.js','assets/maxwell/dingus_nowhiskers.jpg','assets/maxwell/dingus_whiskers.tga.png',...Object.values(manifest.icons||{})])].sort();

@@ -62,4 +62,6 @@ The extension ZIP is written to `dist/`. See the [development guide](docs/DEVELO
 
 ## Licensing
 
-A project license has not been selected. Model attribution and licensing notes are documented with the [Maxwell assets](assets/maxwell/README.md).
+A project license has not been selected for the extension code.
+
+[Maxwell the cat (Dingus)](https://sketchfab.com/3d-models/maxwell-the-cat-dingus-2ca7f3c1957847d6a145fc35de9046b0) by [bean(alwayshasbean)](https://sketchfab.com/alwayshasbean) is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Adapted and animated for Sparunkify. See [Third-party notices](THIRD_PARTY_NOTICES.md) and the [asset notes](assets/maxwell/README.md).

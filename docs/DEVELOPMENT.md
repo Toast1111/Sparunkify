@@ -10,7 +10,7 @@ npm test
 npm run package
 ```
 
-The package script uses an explicit allowlist to write the extension ZIP and SHA-256 checksum to `dist/`. Tests, source assets, documentation and recordings are excluded. GitHub Actions runs the checks and uploads the package as a workflow artifact.
+The package script uses an explicit allowlist to write the extension ZIP and SHA-256 checksum to `dist/`. It includes privacy information and third-party attribution. Tests, source assets, development documentation and recordings are excluded. GitHub Actions runs the checks and uploads the package as a workflow artifact.
 
 ## Browser verification
 

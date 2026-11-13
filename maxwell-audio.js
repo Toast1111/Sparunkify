@@ -25,38 +25,63 @@
     const height=1-.45*compress+.2*stretch;
     return {width:1/Math.sqrt(height),height,depth:1};
   }
+  class ChannelReference {
+    constructor(floor){this.floor=floor;this.level=floor;this.ready=false;}
+    normalize(value,dt){
+      value=amplitude(value);
+      if(!this.ready&&value>=this.floor*.01){this.level=Math.max(this.floor,value);this.ready=true;}
+      // Normalize against the preceding history, then update it. Quiet passages
+      // lower the reference slowly; silence holds it, and a floor limits gain.
+      const normalized=value/this.level;
+      if(value>=this.floor*.01){
+        const tau=value>this.level?1.5:20;
+        this.level=Math.max(this.floor,this.level+(value-this.level)*(1-Math.exp(-dt/tau)));
+      }
+      return normalized;
+    }
+  }
   class Dynamics {
-    constructor(){this.previous=0;this.reference=0;this.variation=0;this.ready=false;this.quiet=0;this.cooldown=1;this.beat=0;this.hit=0;}
+    constructor(){
+      this.bassReference=new ChannelReference(.08);this.levelReference=new ChannelReference(.12);
+      this.previous=0;this.reference=0;this.variation=0;this.ready=false;this.quiet=0;
+      this.beat=0;this.hit=0;this.fast=0;this.slow=0;this.armed=true;
+    }
     push(bass,level,dt){
       bass=amplitude(bass);level=amplitude(level);dt=Math.max(.001,Math.min(.25,dt));
-      const energy=bass*.8+level*.2,delta=energy-this.previous;
-      this.quiet=energy<.0005?this.quiet+dt:0;
+      const bassDrive=this.bassReference.normalize(bass,dt),levelDrive=this.levelReference.normalize(level,dt);
+      const energy=bassDrive*.8+levelDrive*.2,delta=energy-this.previous;
+      this.quiet=Math.max(bass,level)<.0005?this.quiet+dt:0;
       if(this.quiet>1)this.ready=false;
-      const first=!this.ready&&energy>=.0005;
-      if(first){this.reference=energy;this.variation=energy*.08;this.ready=true;}
-      // Use the preceding several seconds, not the current peak, as the scale.
-      // Ratios may exceed one. A loud accent cannot redefine itself as "100%".
-      const scale=Math.max(.00001,this.reference*.08,this.variation*4),rise=delta/scale;
-      this.cooldown+=dt;
-      if(energy>=.0005&&(first||rise>.12)&&this.cooldown>=.14){
-        // Smooth compression has no upper ceiling or minimum full-strength hit.
-        this.beat++;this.hit=first?1:Math.log1p(rise);this.cooldown=0;
+      if(!this.ready&&this.quiet===0){this.reference=energy;this.variation=energy*.08;this.ready=true;}
+      this.fast+=(energy-this.fast)*(1-Math.exp(-dt/.015));
+      this.slow+=(energy-this.slow)*(1-Math.exp(-dt/.15));
+      const scale=Math.max(.015,this.reference*.08,this.variation*4),onset=this.fast-this.slow,threshold=scale*.12;
+      // Rearm when the onset falls away, with no timed cooldown between hits.
+      // A held attack still cannot repeatedly trigger its own spin boost.
+      if(onset<=threshold*.25)this.armed=true;
+      if(this.armed&&this.quiet===0&&onset>threshold){
+        // Keep weak passages weak, without a fixed minimum or an upper speed cap.
+        this.beat++;this.hit=Math.log1p(onset/scale)*energy/(energy+.5);
+        this.armed=false;
       }
-      const drive=energy/Math.max(.00001,this.reference);
       this.reference+=(energy-this.reference)*(1-Math.exp(-dt/6));
       this.variation+=(Math.abs(delta)-this.variation)*(1-Math.exp(-dt/4));
       this.previous=energy;
-      return {bass,level,beat:this.beat,hit:this.hit,drive};
+      return {bass,level,bassDrive,levelDrive,beat:this.beat,hit:this.hit,drive:energy};
     }
   }
   class Pose {
-    constructor(){this.yaw=-1.05;this.age=10;this.strength=0;this.spinKick=0;}
+    constructor(){this.yaw=-1.05;this.age=10;this.strength=0;this.spinKick=0;this.groove=0;}
     hit(strength){
       this.age=0;this.strength=amplitude(strength);this.spinKick+=this.strength*32;
     }
     advance(dt,drive,reduced=false){
       dt=Math.max(0,Math.min(.05,dt));this.age+=dt;
-      if(!reduced)this.yaw=(this.yaw+dt*(.35+amplitude(drive)*2+this.spinKick))%(Math.PI*2);
+      const target=amplitude(drive),tau=target>this.groove?.08:1.5;
+      this.groove+=(target-this.groove)*(1-Math.exp(-dt/tau));
+      // Sustained momentum follows the 80/20 energy blend between beats. Hits
+      // bypass this envelope, keeping their immediate attack and short decay.
+      if(!reduced)this.yaw=(this.yaw+dt*(.35+this.groove*2+this.spinKick))%(Math.PI*2);
       this.spinKick*=Math.exp(-dt*7);
       const decay=Math.exp(-this.age*7)*this.strength,attack=1-Math.exp(-this.age*45);
       // Ease into the squish over several frames, then rebound and settle.

@@ -1,6 +1,6 @@
 {
   "name": "sparunkify",
-  "version": "0.2.3",
+  "version": "0.2.6",
   "private": true,
   "description": "Spotify artwork effects and an optional audio-reactive Maxwell cat",
   "scripts": {

@@ -12,6 +12,11 @@ const {pathToFileURL}=require('node:url');
     page.on('pageerror',error=>errors.push(error.message));
     await page.goto(pathToFileURL(path.join(root,'preview.html')).href);
     await page.locator('.sleeve.ready').waitFor();
+    assert.equal(await page.evaluate(()=>{
+      const empty=Sparunkify.createSurface({settings:Sparunkify.defaults});
+      const display=getComputedStyle(empty.root.querySelector('.sleeve img')).display;
+      empty.destroy();return display;
+    }),'none','An empty artwork view must not display a broken image');
     assert.equal(await page.locator('#source').textContent(),'Image preview');
     await page.screenshot({path:path.join(out,'artwork.png')});
     await page.locator('#tune').click();

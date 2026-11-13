@@ -15,7 +15,7 @@ async function setup({set=async()=>{},get=async()=>({})}={}){
   const sandbox={
     document:{body:{append:()=>{}},getElementById:()=>null,createElement:()=>launcher,querySelector:()=>null,addEventListener:()=>{}},
     window:{addEventListener:(name,fn)=>windowEvents[name]=fn},
-    location:{reload:()=>reloads++},
+    URL,location:{href:'https://open.spotify.com/',reload:()=>reloads++},
     setTimeout:(fn,delay)=>{const id=++nextID;timeouts.set(id,{fn,delay});return id;},
     clearTimeout:id=>timeouts.delete(id),
     setInterval:fn=>{const id=++nextID;intervals.set(id,fn);return id;},
@@ -27,6 +27,7 @@ async function setup({set=async()=>{},get=async()=>({})}={}){
     }
   };
   vm.createContext(sandbox);vm.runInContext(engine,sandbox);
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../players.js'),'utf8'),sandbox);
   sandbox.Sparunkify.createSurface=options=>{
     surfaceOptions=options;
     return {root:{querySelector:()=>button},setStatus:text=>statuses.push(text),update:()=>{},destroy:()=>{}};

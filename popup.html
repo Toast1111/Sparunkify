@@ -12,14 +12,15 @@
 <label>Sparkle <output id="sparkle-value"></output><input type="range" id="sparkle" min="0" max="100"></label>
 </div>
 <div class="toggles">
-<label class="toggle">Show effects in Spotify<input type="checkbox" id="inline"></label>
+<label class="toggle">Show effects in player<input type="checkbox" id="inline"></label>
 <label class="toggle">Animate reflections<input type="checkbox" id="motion"></label>
 <label class="toggle">Tilt with pointer<input type="checkbox" id="parallax"></label>
 <label class="toggle">Maxwell below artwork<input type="checkbox" id="maxwell"></label>
 </div>
 <button id="open" class="primary">Open artwork view</button>
 <button id="preview">Open image preview</button>
-<p class="status" id="status" role="status">Looking for Spotify Web Player...</p>
+<div id="players" hidden><button id="open-spotify">Open Spotify</button><button id="open-youtube-music">Open YouTube Music</button></div>
+<p class="status" id="status" role="status">Looking for your music player...</p>
 <p class="credits"><a href="https://sketchfab.com/3d-models/maxwell-the-cat-dingus-2ca7f3c1957847d6a145fc35de9046b0" target="_blank" rel="noopener noreferrer">Maxwell</a> by <a href="https://sketchfab.com/alwayshasbean" target="_blank" rel="noopener noreferrer">bean(alwayshasbean)</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.<br>Adapted and animated for Sparunkify.</p>
-</main><script src="engine.js"></script><script src="popup.js"></script>
+</main><script src="players.js"></script><script src="engine.js"></script><script src="popup.js"></script>
 </body></html>

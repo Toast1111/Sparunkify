@@ -32,7 +32,7 @@ test('worker falls back when the large variant is missing and uses credential-fr
     requested.push(url);assert.equal(options.credentials,'omit');assert.equal(options.redirect,'error');
     return url===cover('82c1')?{ok:false,status:404}:{ok:true,headers:{get:()=> 'image/jpeg'},arrayBuffer:async()=>new Uint8Array([255,216,255]).buffer};
   }};
-  vm.createContext(sandbox);sandbox.importScripts=()=>vm.runInContext(artworkCode,sandbox);
+  vm.createContext(sandbox);sandbox.importScripts=(...files)=>{for(const file of files)vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8'),sandbox);};
   vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../background.js'),'utf8'),sandbox);
   const result=await new Promise(resolve=>listener({type:'artwork',url:cover('4851')},{tab:{url:'https://open.spotify.com/'}},resolve));
   assert.deepEqual(requested,[cover('82c1'),cover('b273')]);assert.equal(result.url,cover('b273'));assert.match(result.data,/^data:image\/jpeg;base64,/);
@@ -75,4 +75,18 @@ test('maximum saved depth keeps parallax below one CSS pixel and renders a conti
 test('Sobel normals follow horizontal brightness changes without a vertical slope',()=>{const rgba=new Uint8Array(16*16*4);for(let y=0;y<16;y++)for(let x=0;x<16;x++)rgba.set([x*17,x*17,x*17,255],(y*16+x)*4);const {normal,heights}=S.deriveMaps(rgba,16,16),offset=(8*16+8)*4;assert.ok(normal[offset]<127);assert.equal(normal[offset+1],127);assert.ok(heights[8*16+12]>heights[8*16+3]);});
 test('high contrast and single-pixel images produce finite, bounded map values',()=>{for(const n of [1,2,17]){const rgba=new Uint8Array(n*n*4);for(let i=0;i<rgba.length;i++)rgba[i]=i%3?255:0;const maps=S.deriveMaps(rgba,n,n);assert.equal(maps.normal.length,n*n*4);for(const h of maps.heights)assert.ok(Number.isFinite(h)&&h>=0&&h<=1);}});
 test('settings reject malformed data and clamp GPU parameters',()=>{const settings=S.normalize({depth:200,shine:-20,roughness:NaN,preset:'unknown',enabled:'false',motion:false,arbitrary:3});assert.equal(settings.depth,100);assert.equal(settings.shine,0);assert.equal(settings.roughness,S.defaults.roughness);assert.equal(settings.preset,'foil');assert.equal(settings.enabled,true);assert.equal(settings.motion,false);assert.equal(settings.arbitrary,undefined);});
-test('artwork proxy rejects unknown hosts and requests outside Spotify',async()=>{let listener,calls=0;const sandbox={importScripts:()=>{},chrome:{runtime:{onMessage:{addListener:fn=>listener=fn}}},URL,AbortSignal,fetch:()=>{calls++;throw Error('Should not fetch');}};vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../background.js'),'utf8'),sandbox);for(const [url,sender] of [['https://evil.example/image',{tab:{url:'https://open.spotify.com/'}}],['https://i.scdn.co/image/abc',{tab:{url:'https://evil.example/'}}]]){const result=await new Promise(resolve=>listener({type:'artwork',url},sender,resolve));assert.ok(result.error);}assert.equal(calls,0);});
+test('artwork proxy rejects unknown hosts, unsupported pages and cross-service requests',async()=>{
+  let listener,calls=0;
+  const sandbox={chrome:{runtime:{onMessage:{addListener:fn=>listener=fn}}},URL,AbortSignal,fetch:()=>{calls++;throw Error('Should not fetch');}};
+  vm.createContext(sandbox);sandbox.importScripts=(...files)=>{for(const file of files)vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8'),sandbox);};
+  vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../background.js'),'utf8'),sandbox);
+  for(const [url,page] of [
+    ['https://evil.example/image','https://open.spotify.com/'],
+    ['https://i.scdn.co/image/abc','https://evil.example/'],
+    ['https://lh3.googleusercontent.com/cover=w500','https://open.spotify.com/'],
+    ['https://i.scdn.co/image/abc','https://music.youtube.com/'],
+    ['https://lh3.googleusercontent.com.evil.example/cover','https://music.youtube.com/'],
+    ['https://i.scdn.co/image/abc','https://open.spotify.com.evil.example/']
+  ]){const result=await new Promise(resolve=>listener({type:'artwork',url},{tab:{url:page}},resolve));assert.ok(result.error);}
+  assert.equal(calls,0);
+});

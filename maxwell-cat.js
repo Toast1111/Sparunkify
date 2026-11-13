@@ -11,7 +11,7 @@
       this.canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 8px 7px #0008)';
       container.append(this.canvas);this.pose=new MaxwellAudio.Pose();this.lastBeat=S.maxwellLevels.beat;this.active=true;this.last=performance.now();
       try{this.renderer=new MaxwellRenderer(this.canvas);}catch(error){this.canvas.remove();throw error;}
-      this.renderer.ready.catch(()=>{if(!this.dead){onError('Maxwell’s textures could not load. Reload the extension and refresh Spotify.');this.destroy();}});
+      this.renderer.ready.catch(()=>{if(!this.dead){onError('Maxwell’s textures could not load. Reload the extension and refresh your music player.');this.destroy();}});
       this.error=event=>{onError(event.detail);this.destroy();};this.canvas.addEventListener('maxwell-error',this.error);
       this.tick=now=>{
         if(this.dead)return;

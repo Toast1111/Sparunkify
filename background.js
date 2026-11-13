@@ -1,5 +1,5 @@
-/* Fetch only Spotify artwork. No cookies, credentials, arbitrary URLs or page scripts. */
-importScripts('artwork.js');
+/* Fetch only supported player artwork, without cookies or credentials. */
+importScripts('players.js','artwork.js');
 let maxwellQueue=Promise.resolve();
 function queueMaxwell(task){const next=maxwellQueue.then(task);maxwellQueue=next.catch(()=>{});return next;}
 async function stopMaxwell(){
@@ -25,16 +25,17 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
     return true;
   }
   if(message.type==='maxwell-start'||message.type==='maxwell-stop'){
-    if(sender.url!==chrome.runtime.getURL('popup.html')){reply({error:'Turn Maxwell on from the extension popup on Spotify.'});return;}
+    if(sender.url!==chrome.runtime.getURL('popup.html')){reply({error:'Turn Maxwell on from the extension popup on your music player.'});return;}
     queueMaxwell(async()=>{
       if(message.type==='maxwell-stop'){await disableMaxwell();return {ok:true};}
-      if(!Number.isInteger(message.targetTabId))throw Error('Open the extension on a Spotify tab first.');
+      if(!Number.isInteger(message.targetTabId))throw Error('Open the extension on a Spotify or YouTube Music tab first.');
       const tab=await chrome.tabs.get(message.targetTabId);
-      if(!tab.url?.startsWith('https://open.spotify.com/'))throw Error('Choose a Spotify Web Player tab.');
+      const service=SparunkifyPlayers.player(tab.url);
+      if(!service)throw Error('Choose a Spotify or YouTube Music tab.');
       await stopMaxwell();
       const captured=await chrome.tabCapture.getCapturedTabs();
-      if(captured.some(entry=>entry.tabId===tab.id&&['pending','active'].includes(entry.status)))throw Error('Spotify audio is already in use by another capture.');
-      await chrome.offscreen.createDocument({url:'maxwell-offscreen.html',reasons:['USER_MEDIA'],justification:'Analyse Spotify tab audio for the optional spinning Maxwell cat and preserve audible playback.'});
+      if(captured.some(entry=>entry.tabId===tab.id&&['pending','active'].includes(entry.status)))throw Error(`${service.name} audio is already in use by another capture.`);
+      await chrome.offscreen.createDocument({url:'maxwell-offscreen.html',reasons:['USER_MEDIA'],justification:'Analyse the selected music tab audio for the optional spinning Maxwell cat and preserve audible playback.'});
       try{
         const streamId=await chrome.tabCapture.getMediaStreamId({targetTabId:tab.id});
         const response=await chrome.runtime.sendMessage({target:'maxwell-offscreen',type:'start',streamId,tabId:tab.id});
@@ -47,12 +48,12 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
     return true;
   }
   if (message.type !== 'artwork') return;
-  if (!sender.tab?.url?.startsWith('https://open.spotify.com/')) {
-    reply({error: 'This request must come from Spotify.'}); return;
+  if (!SparunkifyPlayers.player(sender.tab?.url)) {
+    reply({error: 'This request must come from Spotify or YouTube Music.'}); return;
   }
   (async () => {
     const url = new URL(message.url);
-    if (url.protocol !== 'https:' || !['i.scdn.co', 'mosaic.scdn.co'].includes(url.hostname)) {
+    if (!SparunkifyPlayers.artworkAllowed(url.href,sender.tab.url)) {
       throw new Error('Unsupported artwork host.');
     }
     let failure;

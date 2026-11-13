@@ -1,4 +1,4 @@
-/* Audio stays in this extension document while Spotify remains the visible tab. */
+/* Audio stays in this extension document while the music player remains visible. */
 (() => {
   'use strict';
   let stream=null,context=null,source=null,analyser=null,timer=null,generation=0;

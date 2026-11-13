@@ -237,14 +237,15 @@ test('stronger hits keep increasing spin while Maxwell stays planted',()=>{
 
 function worker({url='https://open.spotify.com/track/test',captured=[],failure=null}={}){
   let listener,calls=[],offscreen=false,stops=0,forwarded=[];
-  const context={importScripts:()=>{},chrome:{
+  const context={URL,importScripts:()=>{},chrome:{
     storage:{local:{get:async()=>({settings:{enabled:true}}),set:async()=>{}}},
     runtime:{getURL:file=>'chrome-extension://test/'+file,onMessage:{addListener:fn=>listener=fn},sendMessage:async message=>({ok:true})},
     offscreen:{hasDocument:async()=>offscreen,createDocument:async()=>{offscreen=true;},closeDocument:async()=>{offscreen=false;stops++;}},
     tabs:{get:async id=>({id,url}),sendMessage:async(id,message)=>{forwarded.push({id,message});return {ok:true};}},
     tabCapture:{getCapturedTabs:async()=>captured,getMediaStreamId:async options=>{calls.push(options);if(failure)throw Error(failure);return 'one-time-token';}}
   }};
-  vm.runInNewContext(fs.readFileSync(path.join(root,'background.js'),'utf8'),context);
+  vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(root,'players.js'),'utf8'),context);
+  vm.runInContext(fs.readFileSync(path.join(root,'background.js'),'utf8'),context);
   return {calls,forwarded,get stops(){return stops;},get offscreen(){return offscreen;},request:(sender={url:'chrome-extension://test/popup.html'},message={type:'maxwell-start',targetTabId:12})=>new Promise(resolve=>listener(message,sender,resolve))};
 }
 test('popup starts audio in an offscreen document and stop releases it',async()=>{
@@ -252,7 +253,14 @@ test('popup starts audio in an offscreen document and stop releases it',async()=
   assert.equal(app.calls[0].targetTabId,12);assert.equal(app.offscreen,true);
   await app.request(undefined,{type:'maxwell-stop'});assert.equal(app.offscreen,false);assert.equal(app.stops,1);
 });
-test('page scripts and non-Spotify targets cannot request audio capture',async()=>{
+test('YouTube Music uses the same capture flow and lookalike player hosts are rejected',async()=>{
+  const app=worker({url:'https://music.youtube.com/watch?v=demo'});
+  assert.equal((await app.request()).ok,true);assert.equal(app.calls[0].targetTabId,12);
+  await app.request(undefined,{type:'maxwell-stop'});assert.equal(app.offscreen,false);
+  const other=worker({url:'https://music.youtube.com.evil.example/'});
+  assert.match((await other.request()).error,/Choose/);assert.equal(other.calls.length,0);
+});
+test('page scripts and unsupported player targets cannot request audio capture',async()=>{
   const app=worker();assert.match((await app.request({url:'https://open.spotify.com/',tab:{id:12}})).error,/popup/);assert.equal(app.calls.length,0);
   const other=worker({url:'https://example.com/'});assert.match((await other.request()).error,/Spotify/);assert.equal(other.calls.length,0);
 });

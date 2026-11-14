@@ -32,7 +32,8 @@ function pageHTML(body,extra=''){return `<!doctype html><html lang="en"><meta ch
     await capture.screenshot({path:path.join(output,'04-finish-settings.png'),scale:'css',omitBackground:false});
     console.log('04-finish-settings.png: 1280 × 800, direct interface capture');
     // Actual extension content scripts mounted in a clearly labeled local fixture.
-    const extension=await chromium.launchPersistentContext(path.join(scratch,'profile'),{executablePath:process.argv[3]||chromium.executablePath(),headless:true,args:[`--disable-extensions-except=${root}`,`--load-extension=${root}`],viewport:{width:600,height:820},deviceScaleFactor:2});
+    // Playwright removes its temporary profile when the context closes.
+    const extension=await chromium.launchPersistentContext('',{executablePath:process.argv[3]||chromium.executablePath(),headless:true,args:[`--disable-extensions-except=${root}`,`--load-extension=${root}`],viewport:{width:600,height:820},deviceScaleFactor:2});
     let sidebar;
     try{
       const worker=extension.serviceWorkers()[0]||await extension.waitForEvent('serviceworker');

@@ -59,7 +59,8 @@ const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.jpg'
     // Load the actual extension in a separate Chromium profile and exercise the
     // normal Spotify integration against a controlled page, including asset URLs.
     const cover=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=300;const g=c.getContext('2d');g.fillStyle='#303a70';g.fillRect(0,0,300,300);return c.toDataURL().split(',')[1];});
-    const extension=await chromium.launchPersistentContext(fs.mkdtempSync(path.join(out,'extension-profile-')),{executablePath:process.argv[3]||chromium.executablePath(),headless:true,args:[`--disable-extensions-except=${root}`,`--load-extension=${root}`],viewport:{width:1100,height:950}});
+    // Playwright removes its temporary profile when the context closes.
+    const extension=await chromium.launchPersistentContext('',{executablePath:process.argv[3]||chromium.executablePath(),headless:true,args:[`--disable-extensions-except=${root}`,`--load-extension=${root}`],viewport:{width:1100,height:950}});
     try{
       const worker=extension.serviceWorkers()[0]||await extension.waitForEvent('serviceworker');
       await worker.evaluate(base64=>{globalThis.fetch=async()=>new Response(Uint8Array.from(atob(base64),c=>c.charCodeAt(0)),{headers:{'content-type':'image/png'}});},cover);

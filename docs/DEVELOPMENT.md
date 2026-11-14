@@ -22,7 +22,7 @@ node scripts/check-theme.cjs /path/to/node_modules/playwright
 node scripts/check-maxwell.cjs /path/to/node_modules/playwright
 ```
 
-The Maxwell check uses installed Chrome for the preview and Playwright Chromium for an extension fixture. An optional second argument after the module path selects a Chromium executable. Generated screenshots and browser profiles go to the ignored `artifacts/` directory.
+The Maxwell check uses installed Chrome for the preview and Playwright Chromium for an extension fixture. An optional second argument after the module path selects a Chromium executable. Generated screenshots go to the ignored `artifacts/` directory. The Maxwell check and store-graphics generator use temporary browser profiles that Playwright removes when their contexts close.
 
 `python scripts/check-lighting.py` is an optional GPU regression check requiring ModernGL, NumPy and Pillow. It uses the historical renderer fixtures in `tests/fixtures/` to compare lighting behavior. Those fixtures are test inputs and are never packaged with the extension.
 
@@ -49,7 +49,9 @@ node scripts/render-demos.cjs /path/to/node_modules/playwright
 python scripts/make-demo-gifs.py
 ```
 
-Keep original recordings and other local working files in `.local/`, which Git ignores. The optimizer preserves the original file and animation duration.
+Keep original recordings in `.local/recordings/` and other local working files in `.local/`, which Git ignores. The optimizer preserves the original file and animation duration.
+
+Keep the current extension ZIP and checksum in `dist/`, alongside the store-graphics ZIP when needed. Move older builds into `.local/releases/`. Keep scratch experiments and historical comparisons in `.local/experiments/`, and older QA output in `.local/archive/`; `artifacts/` is for generated QA output. Source assets belong in `assets/`, and published recordings and store graphics belong in `docs/`.
 
 Upload-ready store screenshots and promotional tiles use original fictional album art. See [Chrome Web Store graphics](store/README.md) for the files, dimensions, source prompt and regeneration instructions.
 

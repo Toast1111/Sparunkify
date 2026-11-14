@@ -32,7 +32,7 @@ Keep the [source cover](source/afterglow-cover.png), install Playwright separate
 node scripts/build-store-assets.cjs /path/to/node_modules/playwright /path/to/chromium
 ```
 
-Installed Chrome renders the local preview; the Chromium executable is used for an isolated extension fixture. Omit the executable argument to use Playwright's bundled Chromium. Temporary captures and the isolated browser profile stay in ignored `artifacts/store/`.
+Installed Chrome renders the local preview; the Chromium executable is used for an isolated extension fixture. Omit the executable argument to use Playwright's bundled Chromium. Temporary captures stay in ignored `artifacts/store/`; Playwright removes the isolated temporary browser profile when its context closes.
 
 ## Original image-generation prompt
 
